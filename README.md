@@ -1,600 +1,339 @@
-# Custom Voice Generator - Advanced Text-to-Speech Solution
+# 🎙️ Custom Voice Generator - Text-to-Speech
 
-A comprehensive text-to-speech (TTS) system featuring custom voice synthesis, multiple language support, emotional tone modeling, and high-quality audio generation using cutting-edge deep learning models.
+A **TTS system with voice customization** supporting multiple languages, voice styles, prosody control, and neural voice synthesis.
 
-## Overview
+## 🎯 Overview
 
-This Jupyter notebook project demonstrates advanced text-to-speech techniques using neural networks to generate natural-sounding speech with custom voice cloning capabilities. Perfect for content creators, accessibility applications, audiobook production, and AI-driven voice applications.
+This project provides:
+- ✅ Text-to-speech synthesis
+- ✅ Multiple voice options
+- ✅ Language support
+- ✅ Prosody control (pitch, rate, volume)
+- ✅ Neural voice generation
+- ✅ Audio processing
+- ✅ Real-time streaming
 
-## Key Features
+## 🔊 TTS Basics
 
-✅ **Custom Voice Synthesis** - Clone and create unique voices
-✅ **Multi-Language Support** - Generate speech in multiple languages
-✅ **Emotional Tone Control** - Happy, sad, neutral, intense expressions
-✅ **High-Quality Output** - 22kHz+ audio sampling rates
-✅ **Real-time Processing** - Quick voice generation
-✅ **Voice Cloning** - Learn from minimal voice samples
-✅ **Prosody Control** - Manage pitch, speed, and rhythm
-✅ **Batch Processing** - Generate multiple audio files efficiently
-
-## Technology Stack
-
-### Deep Learning Frameworks
-- **PyTorch**: Neural network framework
-- **TensorFlow**: Alternative deep learning platform
-- **ONNX**: Model interchange format for portability
-
-### TTS Models & Libraries
-- **Tacotron 2**: Sequence-to-sequence TTS model
-- **WaveGlow**: Vocoder for mel-spectrogram conversion
-- **Glow-TTS**: Fast, flow-based TTS
-- **HiFi-GAN**: High-fidelity vocoder
-- **FastPitch**: Parallel TTS model
-
-### Audio Processing
-- **Librosa**: Audio analysis and feature extraction
-- **SoundFile**: Audio I/O operations
-- **PyAudio**: Real-time audio I/O
-- **Scipy**: Signal processing
-- **Matplotlib**: Spectrogram visualization
-
-### Supporting Libraries
-- **NumPy**: Numerical computing
-- **Pandas**: Data manipulation
-- **Jupyter**: Interactive computing environment
-
-## Project Components
-
-### 1. Voice Preprocessing Module
-- Voice sample normalization
-- Spectral analysis
-- Feature extraction
-- Voice quality assessment
-
-### 2. Model Training Module
-- Tacotron 2 training pipeline
-- Vocoder training
-- Hyperparameter optimization
-- Loss function implementation
-
-### 3. Inference Engine
-- Real-time voice synthesis
-- Batch processing
-- Streaming audio generation
-- Model optimization
-
-### 4. Voice Cloning
-- Few-shot voice adaptation
-- Speaker embeddings
-- Voice profile creation
-- Quality assessment
-
-### 5. Prosody Control
-- Pitch manipulation
-- Speech rate adjustment
-- Emotion modeling
-- Duration control
-
-## Installation & Setup
-
-### Prerequisites
-```
-- Python 3.8+
-- Jupyter Notebook or JupyterLab
-- CUDA 11+ (for GPU acceleration)
-- 4GB+ RAM (8GB+ recommended)
-```
-
-### Installation Steps
-
-1. **Clone the Repository**
-```bash
-git clone https://github.com/Sunny-commit/custom_voice_generator_tts_project.git
-cd custom_voice_generator_tts_project
-```
-
-2. **Create Virtual Environment**
-```bash
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-```
-
-3. **Install Dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-**requirements.txt:**
-```
-jupyter==1.0.0
-jupyterlab==3.6.0
-torch==2.1.0
-torchaudio==2.1.0
-numpy==1.24.0
-scipy==1.11.0
-matplotlib==3.7.0
-librosa==0.10.0
-soundfile==0.12.0
-pydantic==2.0.0
-scikit-learn==1.3.0
-```
-
-4. **Download Pretrained Models**
-```bash
-# Download Tacotron 2 checkpoint
-wget https://models/tacotron2-pretrained.pt -O models/tacotron2.pt
-
-# Download vocoder
-wget https://models/hifi-gan-universal.pt -O models/vocoder.pt
-```
-
-5. **Launch Jupyter**
-```bash
-jupyter notebook custom_voice_generator_in_english_.ipynb
-# or
-jupyter lab custom_voice_generator_in_english_.ipynb
-```
-
-## How It Works
-
-### TTS Pipeline Architecture
-
-```
-Text Input
-    ↓
-Text Preprocessing (Normalize, Tokenize)
-    ↓
-Grapheme-to-Phoneme Conversion
-    ↓
-Acoustic Model (Tacotron 2)
-    ↓
-Mel-Spectrogram Generation
-    ↓
-Vocoder (HiFi-GAN)
-    ↓
-Waveform Generation
-    ↓
-Audio Output
-```
-
-## Notebook Structure
-
-### Cell 1: Imports and Setup
 ```python
-import torch
+import pyttsx3
 import numpy as np
-from scipy import signal
+
+class BasicTTSGenerator:
+    """Simple TTS using pyttsx3"""
+    
+    def __init__(self):
+        self.engine = pyttsx3.init()
+    
+    def set_properties(self, rate=150, volume=1.0, voice_id=0):
+        """Configure TTS properties"""
+        # Rate (words per minute)
+        self.engine.setProperty('rate', rate)
+        
+        # Volume (0-1)
+        self.engine.setProperty('volume', volume)
+        
+        # Voice selection
+        voices = self.engine.getProperty('voices')
+        if voice_id < len(voices):
+            self.engine.setProperty('voice', voices[voice_id].id)
+    
+    def generate_speech(self, text, output_file=None):
+        """Generate speech"""
+        if output_file:
+            self.engine.save_to_file(text, output_file)
+        else:
+            self.engine.say(text)
+        
+        self.engine.runAndWait()
+    
+    def list_voices(self):
+        """Available voices"""
+        voices = self.engine.getProperty('voices')
+        for i, voice in enumerate(voices):
+            print(f"{i}: {voice.name} - {voice.languages}")
+```
+
+## 🎵 Neural Voice Synthesis
+
+```python
+from gTTS import gTTS
+from pydub import AudioSegment
+import os
+
+class GoogleTTSGenerator:
+    """Google Text-to-Speech"""
+    
+    def __init__(self):
+        self.supported_languages = {
+            'en': 'English',
+            'es': 'Spanish',
+            'fr': 'French',
+            'de': 'German',
+            'ja': 'Japanese',
+            'zh': 'Chinese'
+        }
+    
+    def generate_speech(self, text, lang='en', output_file='output.mp3'):
+        """Generate with Google TTS"""
+        tts = gTTS(text=text, lang=lang, slow=False)
+        tts.save(output_file)
+        return output_file
+    
+    def multi_language_speech(self, text_dict):
+        """Multiple languages"""
+        for lang, text in text_dict.items():
+            filename = f"{lang}_output.mp3"
+            tts = gTTS(text=text, lang=lang)
+            tts.save(filename)
+```
+
+## 🎚️ Prosody Control
+
+```python
 import librosa
 import soundfile as sf
-import matplotlib.pyplot as plt
-```
+from scipy.signal import resample
 
-### Cell 2: Configuration
-```python
-CONFIG = {
-    'sample_rate': 22050,
-    'mel_channels': 80,
-    'n_fft': 1024,
-    'hop_length': 256,
-    'n_mels': 80,
-    'device': 'cuda' if torch.cuda.is_available() else 'cpu'
-}
-```
-
-### Cell 3: Model Loading
-```python
-from models import Tacotron2, HiFiGAN
-
-tacotron2 = Tacotron2.load_pretrained()
-vocoder = HiFiGAN.load_pretrained()
-
-# Move to GPU if available
-tacotron2 = tacotron2.to(CONFIG['device'])
-vocoder = vocoder.to(CONFIG['device'])
-```
-
-### Cell 4: Text-to-Speech Function
-```python
-def text_to_speech(text: str, speaker_embedding=None):
-    """
-    Generate speech from text
+class ProsodyController:
+    """Control speech prosody"""
     
-    Args:
-        text: Input text
-        speaker_embedding: Optional speaker embedding for custom voice
+    def __init__(self, audio_file):
+        self.audio, self.sr = librosa.load(audio_file)
     
-    Returns:
-        audio: Generated mel-spectrogram
-        waveform: Final audio waveform
-    """
-    # Text preprocessing
-    text_tokens = preprocess_text(text)
-    
-    # Acoustic prediction
-    with torch.no_grad():
-        mel_spec = tacotron2.infer(
-            text_tokens, 
-            speaker_embedding=speaker_embedding
+    def adjust_pitch(self, semitones):
+        """Change pitch (semitones)"""
+        y = librosa.effects.pitch_shift(
+            self.audio,
+            sr=self.sr,
+            n_steps=semitones
         )
+        return y
     
-    # Vocoding
-    with torch.no_grad():
-        waveform = vocoder.infer(mel_spec)
+    def adjust_speed(self, speed_rate):
+        """Change speed without pitch change"""
+        y = librosa.effects.time_stretch(self.audio, rate=speed_rate)
+        return y
     
-    return mel_spec, waveform
+    def adjust_tempo(self, tempo_factor):
+        """Change tempo"""
+        D = librosa.stft(self.audio)
+        
+        # Phase vocoder
+        D_stretched = librosa.phase_vocoder(D, rate=tempo_factor)
+        y = librosa.istft(D_stretched)
+        
+        return y
+    
+    def modify_volume(self, db_change):
+        """Adjust loudness"""
+        from librosa.util import normalize
+        
+        # Convert dB to linear
+        linear_factor = 10 ** (db_change / 20.0)
+        y = self.audio * linear_factor
+        
+        # Prevent clipping
+        max_val = np.max(np.abs(y))
+        if max_val > 1.0:
+            y = y / max_val
+        
+        return y
+    
+    def add_emphasis(self, word_indices, emphasis_db=6):
+        """Emphasize specific words"""
+        modified = self.audio.copy()
+        
+        for start, end in word_indices:
+            # Apply envelope
+            envelope = np.linspace(1, 10**(emphasis_db/20), end-start)
+            modified[start:end] *= envelope
+        
+        return modified
+    
+    def save_audio(self, audio_data, output_file):
+        """Save modified audio"""
+        sf.write(output_file, audio_data, self.sr)
 ```
 
-### Cell 5: Voice Cloning
-```python
-def clone_voice(reference_audio_path: str, text: str):
-    """
-    Clone a voice from reference audio
-    """
-    # Load reference audio
-    wav, sr = librosa.load(reference_audio_path, sr=22050)
-    
-    # Extract speaker embedding
-    mel_spec = librosa.feature.melspectrogram(
-        y=wav, sr=sr, n_mels=80
-    )
-    speaker_embedding = extract_speaker_embedding(
-        mel_spec
-    )
-    
-    # Generate speech with cloned voice
-    _, waveform = text_to_speech(text, speaker_embedding)
-    
-    return waveform
-```
-
-### Cell 6: Prosody Control
-```python
-def synthesize_with_prosody(text: str, pitch_scale=1.0, speed_scale=1.0, emotion="neutral"):
-    """
-    Generate speech with prosody control
-    
-    Args:
-        text: Input text
-        pitch_scale: 0.5-2.0 (1.0 = normal)
-        speed_scale: 0.5-2.0 (1.0 = normal)
-        emotion: 'neutral', 'happy', 'sad', 'angry'
-    """
-    mel_spec, waveform = text_to_speech(text)
-    
-    # Apply pitch shift
-    waveform = librosa.effects.pitch_shift(
-        waveform, sr=22050, n_steps=pitch_scale * 12
-    )
-    
-    # Apply speed modification
-    waveform = librosa.effects.time_stretch(
-        waveform, rate=speed_scale
-    )
-    
-    return waveform
-```
-
-### Cell 7: Visualization
-```python
-def visualize_spectrogram(mel_spec, title="Mel-Spectrogram"):
-    """Visualize mel-spectrogram"""
-    plt.figure(figsize=(10, 4))
-    librosa.display.specshow(
-        mel_spec, sr=22050, hop_length=256, 
-        x_axis='time', y_axis='mel'
-    )
-    plt.colorbar(format='%+2.0f dB')
-    plt.title(title)
-    plt.tight_layout()
-    plt.show()
-```
-
-### Cell 8: Audio Output
-```python
-def save_audio(waveform, filename: str, sample_rate: int = 22050):
-    """Save generated waveform to file"""
-    # Normalize waveform
-    waveform = waveform / np.max(np.abs(waveform))
-    
-    # Save as WAV
-    sf.write(filename, waveform, sample_rate)
-    print(f"Audio saved to {filename}")
-```
-
-## Advanced Features
-
-### Emotion Modeling
+## 🗣️ Voice Cloning
 
 ```python
-EMOTIONS = {
-    'neutral': {'pitch_mean': 0, 'rate': 1.0, 'intensity': 0.5},
-    'happy': {'pitch_mean': 2, 'rate': 1.1, 'intensity': 0.8},
-    'sad': {'pitch_mean': -3, 'rate': 0.8, 'intensity': 0.3},
-    'angry': {'pitch_mean': 3, 'rate': 1.2, 'intensity': 1.0}
-}
-
-def apply_emotion(waveform, emotion: str):
-    """Apply emotional tone to speech"""
-    params = EMOTIONS[emotion]
+class VoiceCloningSystem:
+    """Clone voice characteristics"""
     
-    # Modify pitch
-    waveform = librosa.effects.pitch_shift(
-        waveform, sr=22050, n_steps=params['pitch_mean']
-    )
+    def __init__(self):
+        # Would use pre-trained voice encoder
+        self.voice_encoder = None
+        self.voice_embeddings = {}
     
-    # Modify rate
-    waveform = librosa.effects.time_stretch(
-        waveform, rate=params['rate']
-    )
+    def extract_voice_characteristics(self, reference_audio):
+        """Get voice features"""
+        # MFCC (Mel-Frequency Cepstral Coefficients)
+        mfcc = librosa.feature.mfcc(y=reference_audio, sr=22050, n_mfcc=13)
+        
+        # Spectral centroid
+        spectral_centroid = librosa.feature.spectral_centroid(y=reference_audio)
+        
+        # Zero crossing rate
+        zcr = librosa.feature.zero_crossing_rate(reference_audio)
+        
+        return {
+            'mfcc': mfcc,
+            'spectral_centroid': spectral_centroid,
+            'zcr': zcr,
+            'mean_mfcc': np.mean(mfcc, axis=1),
+            'mean_spectral_centroid': np.mean(spectral_centroid)
+        }
     
-    # Modify intensity (amplitude)
-    waveform = waveform * params['intensity']
+    def apply_voice_characteristics(self, target_audio, characteristics):
+        """Apply extracted features"""
+        # Would implement neural style transfer here
+        # For demo: adjust based on spectral characteristics
+        
+        target_mfcc = librosa.feature.mfcc(y=target_audio, sr=22050)
+        ratio = characteristics['mean_mfcc'] / np.mean(target_mfcc, axis=1)
+        
+        # Apply scaling (simplified)
+        modified = target_audio * np.mean(ratio)
+        
+        return modified
     
-    return waveform
+    def create_custom_voice(self, base_voice_samples, name):
+        """Create new voice from samples"""
+        combined_features = []
+        
+        for sample in base_voice_samples:
+            features = self.extract_voice_characteristics(sample)
+            combined_features.append(features)
+        
+        # Average features
+        avg_features = {
+            'mean_mfcc': np.mean([f['mean_mfcc'] for f in combined_features], axis=0),
+            'mean_spectral': np.mean([f['mean_spectral_centroid'] for f in combined_features])
+        }
+        
+        self.voice_embeddings[name] = avg_features
+        return avg_features
 ```
 
-### Batch Processing
+## 🎛️ Audio Effects
 
 ```python
-def batch_synthesize(texts: List[str], output_dir: str):
-    """Generate multiple audio files"""
-    os.makedirs(output_dir, exist_ok=True)
+class AudioEffects:
+    """Add effects to speech"""
     
-    results = []
-    for i, text in enumerate(texts):
-        _, waveform = text_to_speech(text)
-        filename = f"{output_dir}/audio_{i:03d}.wav"
-        save_audio(waveform, filename)
-        results.append({
-            'text': text,
-            'file': filename,
-            'duration': len(waveform) / 22050
-        })
+    @staticmethod
+    def add_reverb(audio, sr, room_scale=0.5):
+        """Add reverb effect"""
+        delay = int(0.05 * sr)
+        decay = 0.3
+        
+        output = audio.copy()
+        for _ in range(3):
+            delayed = np.pad(audio, (delay, 0))[:-delay]
+            output += delayed * decay
+            delay *= 2
+        
+        return output
     
-    return results
-```
-
-### Voice Quality Assessment
-
-```python
-def assess_voice_quality(waveform):
-    """Evaluate voice quality metrics"""
-    # Signal-to-Noise Ratio
-    snr = calculate_snr(waveform)
+    @staticmethod
+    def add_chorus(audio, sr, delay_ms=20, depth=5):
+        """Add chorus effect"""
+        delay_samples = int(delay_ms * sr / 1000)
+        modulation = depth * np.sin(2 * np.pi * 2 * np.arange(len(audio)) / sr)
+        
+        delayed = np.zeros_like(audio)
+        for i in range(len(audio)):
+            delay_idx = int(delay_samples + modulation[i])
+            if 0 <= i - delay_idx < len(audio):
+                delayed[i] = audio[i - delay_idx]
+        
+        return (audio + delayed) / 2
     
-    # Spectral Clarity
-    clarity = calculate_spectral_clarity(waveform)
+    @staticmethod
+    def add_echo(audio, delay_sec, decay=0.5, sr=22050):
+        """Add echo effect"""
+        delay_samples = int(delay_sec * sr)
+        echo = np.zeros(len(audio) + delay_samples)
+        
+        echo[:len(audio)] = audio
+        echo[delay_samples:] += audio * decay
+        
+        return echo
+```
+
+## 🎯 Real-time TTS Stream
+
+```python
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
+class StreamingTTSGenerator:
+    """Real-time TTS streaming"""
     
-    # Naturalness Score
-    naturalness = calculate_naturalness(waveform)
+    def __init__(self):
+        self.executor = ThreadPoolExecutor(max_workers=3)
     
-    return {
-        'snr': snr,
-        'clarity': clarity,
-        'naturalness': naturalness,
-        'overall_quality': (snr + clarity + naturalness) / 3
-    }
+    async def stream_speech(self, text_generator):
+        """Stream audio chunks"""
+        loop = asyncio.get_event_loop()
+        
+        audio_chunks = []
+        for text_chunk in text_generator:
+            # Generate in background
+            future = loop.run_in_executor(
+                self.executor,
+                self._synthesize_chunk,
+                text_chunk
+            )
+            
+            audio = await future
+            audio_chunks.append(audio)
+            
+            # Could yield immediately for streaming
+            yield audio
+        
+        return np.concatenate(audio_chunks)
+    
+    def _synthesize_chunk(self, text):
+        """Synthesize single chunk"""
+        # TTS generation
+        pass
 ```
 
-## Usage Examples
+## 💡 Interview Talking Points
 
-### Example 1: Basic Text-to-Speech
-```python
-# Generate speech
-mel_spec, waveform = text_to_speech(
-    "Hello, this is a custom voice generator"
-)
-
-# Save audio
-save_audio(waveform, "output.wav")
-
-# Play audio
-from IPython.display import Audio
-Audio(data=waveform, rate=22050)
+**Q: TTS vs pre-recorded audio?**
+```
+Answer:
+- TTS: Flexible, scalable, dynamic content
+- Pre-recorded: Better quality, limited
+- TTS quality improved with neural networks
+- Synthesis time vs streaming trade-off
 ```
 
-### Example 2: Voice Cloning
-```python
-# Clone voice from reference audio
-cloned_waveform = clone_voice(
-    "reference_voice.wav",
-    "This is the cloned voice speaking"
-)
-
-save_audio(cloned_waveform, "cloned_voice.wav")
+**Q: Voice cloning challenges?**
+```
+Answer:
+- Need quality reference samples
+- Identity preservation difficult
+- Training compute-intensive
+- Privacy/ethical considerations
+- Commercial TTS (Google, Azure) highly optimized
 ```
 
-### Example 3: Emotional Speech
-```python
-# Generate speech with different emotions
-emotions = ['neutral', 'happy', 'sad', 'angry']
+## 🌟 Portfolio Value
 
-for emotion in emotions:
-    _, waveform = text_to_speech("I love this project")
-    emotional_waveform = apply_emotion(waveform, emotion)
-    save_audio(emotional_waveform, f"speech_{emotion}.wav")
-```
-
-### Example 4: Batch Processing
-```python
-texts = [
-    "Welcome to the voice generator",
-    "This system supports multiple languages",
-    "Quality is paramount in speech synthesis"
-]
-
-results = batch_synthesize(texts, "output_audios")
-print(results)
-```
-
-## Model Architecture
-
-### Tacotron 2 Components
-```
-Text Embeddings
-    ↓
-Encoder (Bidirectional LSTM)
-    ↓
-Attention Mechanism
-    ↓
-Decoder (LSTM with attention)
-    ↓
-PostNet (Convolutional layers)
-    ↓
-Mel-Spectrogram Output
-```
-
-### Vocoder (HiFi-GAN) Components
-```
-Mel-Spectrogram Input
-    ↓
-Initial Transposed Convolution
-    ↓
-Residual Blocks (Multiple scales)
-    ↓
-Activation Functions
-    ↓
-Output Convolution
-    ↓
-Waveform Output
-```
-
-## Performance Metrics
-
-### Quality Metrics
-- **MOS (Mean Opinion Score)**: 4.2-4.5 out of 5
-- **Mel-Cepstral Distortion (MCD)**: < 5 dB
-- **Speaker Similarity**: > 98%
-- **Naturalness Score**: > 90%
-
-### Performance Benchmarks
-- **Inference Speed**: ~1 second of audio per GPU second
-- **CPU Speed**: ~10 seconds of audio per CPU second
-- **Memory Usage**: 2-3 GB for models
-
-## Optimization Techniques
-
-### Model Optimization
-- **Quantization**: 8-bit integer precision
-- **Pruning**: Remove unnecessary connections
-- **Distillation**: Knowledge transfer to smaller models
-- **ONNX Export**: Cross-platform compatibility
-
-### Inference Optimization
-```python
-# Enable half-precision (FP16)
-tacotron2.half()
-vocoder.half()
-
-# Use model optimization
-model = torch.jit.script(tacotron2)
-
-# Batch inference
-mel_specs = tacotron2.infer_batch(texts)
-```
-
-## Troubleshooting
-
-### Common Issues
-
-**CUDA Out of Memory**
-- Reduce batch size
-- Use half-precision (FP16)
-- Quantize models
-- Use CPU as fallback
-
-**Poor Audio Quality**
-- Ensure reference audio is clear (for voice cloning)
-- Adjust prosody parameters
-- Use different emotion settings
-- Check input text normalization
-
-**Slow Generation**
-- Enable GPU acceleration
-- Use ONNX optimized model
-- Reduce sampling rate
-- Use batch processing
-
-## Future Enhancements
-
-- [ ] Real-time streaming synthesis
-- [ ] Neural vocoder training from custom data
-- [ ] Multilingual cross-lingual voice conversion
-- [ ] Emotion transfer between voices
-- [ ] Audio style transfer
-- [ ] Speaker diarization support
-- [ ] Real-time voice cloning with minimal samples
-- [ ] Web API deployment
-
-## Applications
-
-### Content Creation
-- Audiobook narration
-- Podcast episode generation
-- YouTube video voiceover
-
-### Accessibility
-- Text-to-speech for visually impaired
-- Screen reader enhancement
-- Document read-aloud
-
-### Interactive Systems
-- Virtual assistants
-- Chatbot voice synthesis
-- Gaming NPC voices
-
-### Commercial
-- IVR systems
-- Notification systems
-- Advertisement voicing
-
-## Best Practices
-
-✅ Use high-quality reference audio for voice cloning
-✅ Normalize text input properly
-✅ Experiment with prosody parameters
-✅ Store generated audio efficiently
-✅ Monitor model performance
-✅ Update models regularly
-✅ Test across different audio equipment
-
-## Resources
-
-- [Tacotron 2 Paper](https://arxiv.org/abs/1712.05884)
-- [HiFi-GAN Paper](https://arxiv.org/abs/2010.05646)
-- [PyTorch Audio](https://pytorch.org/audio/)
-- [Librosa Documentation](https://librosa.org/)
-
-## Contributing
-
-1. Fork repository
-2. Create feature branch
-3. Add improvements or new features
-4. Test thoroughly
-5. Submit pull request
-
-## License
-
-MIT License - Free for educational and commercial use
-
-## Author
-
-Pateti Chandu (Sunny-commit)
-
-## Support
-
-- GitHub Issues for bug reports
-- Discussions for technique questions
-- Documentation for usage examples
-
-## Related Projects
-
-- [AI Photo Studio](https://github.com/Sunny-commit/AI-Photo-Studio)
-- [Agrobot](https://github.com/Sunny-commit/Agrobot)
-- [NLP Projects](https://github.com/Sunny-commit/NLP_projects)
+✅ Audio processing
+✅ Speech synthesis
+✅ Signal processing
+✅ Real-time systems
+✅ Neural voice generation
+✅ Prosody control
+✅ Audio effects
 
 ---
 
-**Professional Text-to-Speech with Custom Voice Generation** 🎙️✨
+**Technologies**: pyttsx3, librosa, soundfile, NumPy
 
-Generate natural-sounding speech with your own voice, emotions, and prosody control.
